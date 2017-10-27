@@ -79,7 +79,7 @@ void main()
 	s0 = clock();
 for (int r = 0; r < RUNS; r++)
 {
-    conv_filter(imgHeight, imgWidth, imgHeightF, imgWidthF,
+    median_filter_C(imgHeight, imgWidth, imgHeightF, imgWidthF,
 				imgFOffsetH, imgFOffsetW,
 				imgSrc, imgRes);
 	printf("%d\r\n", r);
