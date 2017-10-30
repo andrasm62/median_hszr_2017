@@ -1,5 +1,5 @@
 #include "omp.h"
-
+#include <stdio.h>
 #include "emmintrin.h"
 #include "nmmintrin.h"
 #include "defs.h" 
@@ -58,8 +58,10 @@ int quickselect(char *nums, char* pos, int left, int right, int k){
 void sort_and_merge(char* a, char* b, char* c, signed char* a_pos, signed char* b_pos, signed char* c_pos){
 	int i, j, k;
 	quicksort(c, c_pos, 0, FILTER_W-1);
+	//for (i = 0; i < 25; i++) printf("%d\r\n", a_pos[i]);
 	for(i = 0,j = 0, k = 0; i < FILTER_W * FILTER_H; i++){
-		while(a_pos[i] < 1) k++;
+		
+		while (a_pos[i+k] < 1) { k++;}
 		if(a[i+k] <= c[j]) {
 			b[i] = a[i+k];
 			b_pos[i] = a_pos[i+k];
@@ -210,9 +212,9 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	char r_new[FILTER_H];
 	char g_new[FILTER_H];
 	char b_new[FILTER_H];
-	signed char r_new_p[FILTER_H] = {5,5,5,5,5};
-	signed char g_new_p[FILTER_H] = {5,5,5,5,5};
-	signed char b_new_p[FILTER_H] = {5,5,5,5,5};
+	signed char r_new_p[FILTER_H] = {21,22,23,24,25};
+	signed char g_new_p[FILTER_H] = {21,22,23,24,25};
+	signed char b_new_p[FILTER_H] = {21,22,23,24,25};
 	int base, base_out;
 	
 	//[0;-2] pixel
@@ -464,7 +466,12 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		Y++;
 		base = (Y * imgWidthF + imgFOffsetW) * 4; //base += (imgWidth + 1) * 4;
 		base_out = (Y * imgWidth) * 4;
-		
+		printf("%d\r\n", Y);
+		if (Y >= imgHeight)
+		{
+			Y = Y + 1;
+			return;
+		}
 		
 		//Vertical movement, left side
 
@@ -499,4 +506,5 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		imgDst[base_out + 1]	= g_a[12];
 		imgDst[base_out + 2]	= b_a[12];
 	}
+	return;
 }
