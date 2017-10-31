@@ -33,9 +33,9 @@ void main()
 	printf("Input resolution: %4dx%4d\n", imgWidth, imgHeight);
 
 	char *img;
-	int imgWidthF = imgWidth + FILTER_W - 1 + 2;
+	int imgWidthF = imgWidth + FILTER_W - 1;
 	int imgHeightF = imgHeight + FILTER_H - 1;
-	int imgFOffsetW = (FILTER_W-1) + 2;
+	int imgFOffsetW = (FILTER_W-1)/2;
 	int imgFOffsetH = (FILTER_H-1)/2;
 	img = (char *)(_aligned_malloc(4*imgWidthF*imgHeightF*sizeof(char), 32));
 	int row, col;
@@ -79,7 +79,7 @@ void main()
 	s0 = clock();
 	for (int r = 0; r < RUNS; r++)
 	{
-		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, img, imgRes);
+		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, img, imgRes);
 
 
 		printf("%d\r\n", r);
@@ -121,4 +121,6 @@ void main()
 	ilEnable(IL_FILE_OVERWRITE);
 	ilSaveImage((const char*)("output.jpg"));
 	ilDeleteImages(1, &ilImg);
+
+
 }

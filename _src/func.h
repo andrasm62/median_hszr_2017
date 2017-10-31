@@ -4,4 +4,4 @@ void quicksort(char *nums, char* pos, int l, int r);
 
 void sort_and_merge(char* a, char* b, char* c, signed char* a_pos, signed char* b_pos, signed char* c_p);
 
-void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, char* imgSrc, char* imgDst);
+void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, int imgFOffsetH, char* imgSrc, char* imgDst);
