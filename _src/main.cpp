@@ -32,12 +32,12 @@ void main()
 
 	printf("Input resolution: %4dx%4d\n", imgWidth, imgHeight);
 
-	char *img;
+	unsigned char *img;
 	int imgWidthF = imgWidth + FILTER_W - 1;
 	int imgHeightF = imgHeight + FILTER_H - 1;
 	int imgFOffsetW = (FILTER_W-1)/2;
 	int imgFOffsetH = (FILTER_H-1)/2;
-	img = (char *)(_aligned_malloc(4*imgWidthF*imgHeightF*sizeof(char), 32));
+	img = (unsigned char *)(_aligned_malloc(4 * imgWidthF*imgHeightF*sizeof(unsigned char), 32));
 	int row, col;
 
 	for (row=0; row<imgHeightF; row++)
@@ -58,9 +58,9 @@ void main()
 		{
 			int pixel_dst = ((row+imgFOffsetH)*imgWidthF + (col+imgFOffsetW))*4;
 			int pixel_src = (row*imgWidth + col)*3;
-			*(img+pixel_dst+0) = (char)(*(imgData+pixel_src+0));
-			*(img+pixel_dst+1) = (char)(*(imgData+pixel_src+1));
-			*(img+pixel_dst+2) = (char)(*(imgData+pixel_src+2));
+			*(img+pixel_dst+0) = (unsigned char)(*(imgData+pixel_src+0));
+			*(img + pixel_dst + 1) = (unsigned char)(*(imgData + pixel_src + 1));
+			*(img + pixel_dst + 2) = (unsigned char)(*(imgData + pixel_src + 2));
 			*(img+pixel_dst+3) = 0;
 		}
 	}
@@ -71,8 +71,8 @@ void main()
 	clock_t s0, e0;
 	double d0;
 
-	char *imgRes;
-	imgRes = (char *)(_aligned_malloc(4 * imgWidthF * imgHeightF * sizeof(char), 32));
+	unsigned char *imgRes;
+	imgRes = (unsigned char *)(_aligned_malloc(4 * imgWidthF * imgHeightF * sizeof(unsigned char), 32));
 
 	double mpixel;
 
@@ -95,7 +95,7 @@ void main()
 	getchar();
 
 
-	char *imgWrite;
+	unsigned char *imgWrite;
 	imgWrite = imgRes;
 
 //---------------------------------------------------------------------------------------
