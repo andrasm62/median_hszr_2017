@@ -79,6 +79,7 @@ void main()
 	s0 = clock();
 	for (int r = 0; r < RUNS; r++)
 	{
+		printf("%d\r\n", r);
 		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, img, imgRes);
 
 

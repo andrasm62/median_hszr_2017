@@ -8,7 +8,7 @@ signed char partition(unsigned char* nums, signed char* pos, int left, int right
 	char tmp, tmp_pos;
 	char pivot = nums[right], i, x;
 	
-	#define SWAP(a, b) { tmp = nums[a]; nums[a] = nums[b]; nums[b] = tmp; tmp_pos = a; a= b; b = tmp_pos; }
+#define SWAP(a, b) { tmp = nums[a]; nums[a] = nums[b]; nums[b] = tmp; tmp_pos = pos[a]; pos[a]= pos[b]; pos[b] = tmp_pos; }
 
 	for (x = left, i = left; x < right; x++){
 		if (nums[x] <= pivot){
@@ -105,121 +105,6 @@ void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signe
 }
 
 
-/*
-void median_h(char* r_a, char* r_b, signed char* r_a_p, signed char* r_b_p, char* g_a, char* g_b, signed char* g_a_p, signed char* g_b_p, char* b_a, char* b_b, signed char* b_a_p, signed char* b_b_p, char* imgSrc, char* ImgDst int imgFOffsetH, int imgFOffsetW, int imgWidthF, int X, int Y, char direction){
-	char r_new[FILTER_W];
-	char g_new[FILTER_W];
-	char b_new[FILTER_W];
-	signed char r_new_p[FILTER_W];
-	signed char g_new_p[FILTER_W];
-	signed char b_new_p[FILTER_W];
-	int i, j;
-	int base, base_out;
-	
-	base = (Y * imgWidthF + imgFOffsetW + X - direction) * 4;
-	base_out = (Y * imgWidth + X) * 4;
-	
-	for(i = 0; i < FILTER_H; i++){
-		for(j = 0; j < FILTER_W; j++){
-			r_a_p[i][j] = r_a_p[i][j] - 5;
-			g_a_p[i][j] = g_a_p[i][j] - 5;
-			b_a_p[i][j] = b_a_p[i][j] - 5;
-		}
-		r_new_p[i] = FILTER_H * (FILTER_W - 1) + i;
-		g_new_p[i] = FILTER_H * (FILTER_W - 1) + i;
-		b_new_p[i] = FILTER_H * (FILTER_W - 1) + i;
-	}
-	
-	for(i = 0; i < FILTER_W; i++){
-		r_new[i] = imgSrc[base + i * imgWidthF * 4];
-		g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
-		b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
-	}
-	
-	sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
-	sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
-	sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
-	
-	imgDst[base_out] 		= r_a[12];
-	imgDst[base_out + 1]	= g_a[12];
-	imgDst[base_out + 2]	= b_a[12];
-	
-	return;
-}
-
-
-void median_v(char* r_a, char* r_b, signed char* r_a_p, signed char* r_b_p, char* g_a, char* g_b, signed char* g_a_p, signed char* g_b_p, char* b_a, char* b_b, signed char* b_a_p, signed char* b_b_p, char* imgSrc, char* ImgDst int imgFOffsetH, int imgFOffsetW, int imgWidthF, int X, int Y, char direction){
-	char r_new[FILTER_W];
-	char g_new[FILTER_W];
-	char b_new[FILTER_W];
-	signed char r_new_p[FILTER_W];
-	signed char g_new_p[FILTER_W];
-	signed char b_new_p[FILTER_W];
-	int i, j;
-	int base, base_out;
-	
-	base = (Y * imgWidthF + X) * 4;
-	base_out = (Y * imgWidth + X) * 4;
-	
-	if(direction == 0){
-		for(i = FILTER_H; i > 0; i--){
-			r_new_p[i] = i;
-			g_new_p[i] = i;
-			b_new_p[i] = i;
-		}
-		//VAGY LOOK-UP TABLE
-		for(i = 0; i < FILTER_H; i++){	
-			for(j = 0; j < FILTER_W; j++){
-				r_a_p[i][j] = r_a_p[i][j] + 19 - r_a_p[i][j] / (FILTER_H + 1) * 10;
-				if(r_a_p[i][j] % FILTER_H == 0) r_a_p[i][j] = 0;
-				
-				g_a_p[i][j] = g_a_p[i][j] + 19 - g_a_p[i][j] / (FILTER_H + 1) * 10;
-				if(g_a_p[i][j] % FILTER_H == 0) g_a_p[i][j] = 0;
-				
-				b_a_p[i][j] = b_a_p[i][j] + 19 - b_a_p[i][j] / (FILTER_H + 1) * 10;
-				if(b_a_p[i][j] % FILTER_H == 0) b_a_p[i][j] = 0;
-			}
-		}	
-	}
-	else {
-		for(i = 1; i < FILTER_H + 1; i++){
-			r_new_p[i] = i;
-			g_new_p[i] = i;
-			b_new_p[i] = i;
-		}
-		for(i = 0; i < FILTER_H; i++){	
-			for(j = 0; j < FILTER_W; j++){
-				if(r_a_p[i][j] % FILTER_H == 1 )
-					r_a_p[i][j] = 0;
-				else r_a_p[i][j]--;
-				if(g_a_p[i][j] % FILTER_H == 1 )
-					g_a_p[i][j] = 0;
-				else g_a_p[i][j]--;
-				if(b_a_p[i][j] % FILTER_H == 1 )
-					b_a_p[i][j] = 0;
-				else b_a_p[i][j]--;
-			}
-		}
-	}
-	
-	for(i = 0; i < FILTER_W; i++){
-		r_new[i] = imgSrc[base + i * 4];
-		g_new[i] = imgSrc[base + i * 4 + 1];
-		b_new[i] = imgSrc[base + i * 4 + 2];
-	}
-	
-	sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
-	sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
-	sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
-	
-	imgDst[base_out] 		= r_a[12];
-	imgDst[base_out + 1]	= g_a[12];
-	imgDst[base_out + 2]	= b_a[12];
-	
-	return;
-}
-*/
-
 
 void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, int imgFOffsetH, char* imgSrc, char* imgDst){
 
@@ -249,6 +134,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 
 	char lut_fw[26] = { 0, 0, 21, 22, 23, 24, 0, 16, 17, 18, 19, 0, 11, 12, 13, 14, 0, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
 
+	printf("1\r\n");
 	//[-2;0] pixel, Output stored in B
 
 	for (i = 0; i < FILTER_W; i++){
@@ -298,14 +184,13 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	//Image processing
 	//---------------
 
-
 	while (Y < imgHeight){
 
 		//Vertical movement, left side
 
 		base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
-		base_out = Y * imgWidth;
-
+		base_out = Y * imgWidth * 4;
+		printf("%d\r\n", base_out);
 		//Updating A positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
 			r_a_p[i] = lut_fw[r_a_p[i]];
@@ -373,7 +258,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			//Updating base addresses
 			base += 4;
 			base_out += 4;
-
+			printf("%d\r\n", base_out);
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
 				r_a_p[i] = r_a_p[i] - 5;
@@ -576,7 +461,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 2] = b_a[12];
 		}
 		Y++;
-		//printf("%d\r\n", Y);
+		printf("%d\r\n", Y);
 	}
 	return;
 }
