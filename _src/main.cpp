@@ -45,23 +45,20 @@ void main()
 		for (col=0; col<imgWidthF;col++)
 		{
 			int pixel = (row*imgWidthF + col)*4;
-			*(img+pixel+0) = 0;
-			*(img + pixel + 1) = 0;
-			*(img + pixel + 2) = 0;
-			*(img + pixel + 3) = 0;
+			img[pixel] = 0;
+			img[pixel + 1] = 0;
+			img[pixel + 2] = 0;
+			img[pixel + 3] = 0;
 		}
 	}
-
-	for (row=0; row<imgHeight; row++)
-	{
-		for (col=0; col<imgWidth;col++)
-		{
-			int pixel_dst = ((row+imgFOffsetH)*imgWidthF + (col+imgFOffsetW))*4;
-			int pixel_src = (row*imgWidth + col)*3;
-			*(img+pixel_dst+0) = (unsigned char)(*(imgData+pixel_src+0));
-			*(img + pixel_dst + 1) = (unsigned char)(*(imgData + pixel_src + 1));
-			*(img + pixel_dst + 2) = (unsigned char)(*(imgData + pixel_src + 2));
-			*(img+pixel_dst+3) = 0;
+	for (row = 0; row < imgHeight; row++){
+		for (col = 0; col < imgWidth; col++){
+			int base = ((row + imgFOffsetH) * imgWidthF + col + imgFOffsetW) * 4;
+			img[base + 0] = imgData[(row * imgWidth + col) * 3];
+			img[base + 1] = imgData[(row * imgWidth + col) * 3 + 1];
+			img[base + 2] = imgData[(row * imgWidth + col) * 3 + 2];
+			img[base + 3] = 0;
+			//printf("%d, %d, %d, %d\r\n", img[base + 0], img[base + 1], img[base + 2], img[base + 3]);
 		}
 	}
 

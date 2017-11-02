@@ -145,12 +145,13 @@ void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signe
 		j = 0;
 	}
 	*/
+	/*
 	for (i = 1; i < 25; i++)
 	if (b[i] < b[i - 1]){
 		printf("ERROR");
 		while (1);
 	}
-	//	*/
+	*/
 
 }
 
@@ -184,8 +185,11 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	signed char lut_fw[26] = { 0, 0, 21, 22, 23, 24, 0, 16, 17, 18, 19, 0, 11, 12, 13, 14, 0, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
 	/*
 	for (i = 0; i < imgHeight; i++){
-		for (j = 0; j < imgWidth * 4; j++){
-			imgDst[i * imgWidth * 4 + j] = imgSrc[(i + imgFOffsetH) * imgWidthF * 4 + j + imgFOffsetW];
+		for (j = 0; j < imgWidth; j++){
+			int base = ((i + imgFOffsetH) * imgWidthF + j + imgFOffsetW) * 4;
+			imgDst[(i * imgWidth + j) * 4] = imgSrc[base + 0];
+			imgDst[(i * imgWidth + j) * 4 + 1] = imgSrc[base + 1];
+			imgDst[(i * imgWidth + j) * 4 + 2] = imgSrc[base + 2];
 		}
 	}
 	return;
@@ -237,17 +241,18 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
 	sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
-//---------------	
-//Image processing
-//---------------
+	//---------------	
+	//Image processing
+	//---------------
 
 	while (Y < imgHeight){
-		printf("\r\nX - Y: %d - %d\r\n", X, Y);
+		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 		//Vertical movement, left side
 
 		base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
 		base_out = Y * imgWidth * 4;
-		
+		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
+
 		//Updating A positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
 			r_a_p[i] = lut_fw[r_a_p[i]];
@@ -274,12 +279,13 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
 
 		//Writing out calculated pixel
-		imgDst[base_out] =		r_b[12];
-		imgDst[base_out + 1] =	g_b[12];
-		imgDst[base_out + 2] =	b_b[12];
+		imgDst[base_out + 0] = r_b[12];
+		imgDst[base_out + 1] = g_b[12];
+		imgDst[base_out + 2] = b_b[12];
 
 		base = (Y * imgWidthF + FILTER_W) * 4;	//Setting up base addresses
 		base_out += 4;
+		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 		//Updating B positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
 			r_b_p[i] = r_b_p[i] - 5;
@@ -305,18 +311,18 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
 		//Writing out calculated pixel
-		imgDst[base_out] =		r_a[12];
-		imgDst[base_out + 1] =	g_a[12];
-		imgDst[base_out + 2] =	b_a[12];
+		imgDst[base_out + 0] = r_a[12];
+		imgDst[base_out + 1] = g_a[12];
+		imgDst[base_out + 2] = b_a[12];
 
 		//Horizontal part, forward
 		for (X = 2; X < imgWidth; X += 2){
 
-			printf("\r\nX - Y: %d - %d\r\n", X, Y);
+			//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 			//Updating base addresses
 			base += 4;
 			base_out += 4;
-			
+			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
 				r_a_p[i] = r_a_p[i] - 5;
@@ -334,7 +340,12 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
-
+			/*
+			for (i = 0; i < 5; i++) {
+				printf("%d, ", r_new[i]); printf("%d, ", g_new[i]); printf("%d, ", b_new[i]);
+				printf("\r\n");
+			}
+			*/
 			//Sorting new values and merging the 2 tables
 			//First from A+C->B then B+C->A
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
@@ -342,13 +353,14 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
 
 			//Writing out calculated pixel
-			imgDst[base_out] = r_b[12];
+			imgDst[base_out + 0] = r_b[12];
 			imgDst[base_out + 1] = g_b[12];
 			imgDst[base_out + 2] = b_b[12];
 
 			//Updating base addresses
 			base += 4;
 			base_out += 4;
+			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating B positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -364,6 +376,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 				r_new[i] = imgSrc[base + i * imgWidthF * 4];
+				//printf("%d\r\n", base + i * imgWidthF * 4);
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
@@ -374,16 +387,17 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
 			//Writing out calculated pixel
-			imgDst[base_out] =		r_a[12];
-			imgDst[base_out + 1] =	g_a[12];
-			imgDst[base_out + 2] =	b_a[12];
+			imgDst[base_out + 0] = r_a[12];
+			imgDst[base_out + 1] = g_a[12];
+			imgDst[base_out + 2] = b_a[12];
 		}
 		Y++;
 		//Vertical movement, right side
 
-		printf("\r\nX - Y: %d - %d\r\n", X, Y);
-		base = (imgWidthF * Y - FILTER_W + 1) * 4;	//Setting up base addresses
-		base_out = (Y * imgWidth - 1) * 4;
+		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
+		base = (imgWidthF * (Y + FILTER_H) - FILTER_W) * 4;	//Setting up base addresses
+		base_out = ((Y + 1) * imgWidth - 1) * 4;
+		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 		//Updating A positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -399,9 +413,10 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 
 		//Reading new values from the original image
 		for (i = 0; i < FILTER_W; i++){
-			r_new[i] = imgSrc[base + i];
-			g_new[i] = imgSrc[base + i + 1];
-			b_new[i] = imgSrc[base + i + 2];
+			r_new[i] = imgSrc[base + i * 4];
+			//printf("%d\r\n", base + i * 4);
+			g_new[i] = imgSrc[base + i * 4 + 1];
+			b_new[i] = imgSrc[base + i * 4 + 2];
 		}
 
 		//Sorting new values and merging the 2 tables
@@ -411,12 +426,13 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
 
 		//Writing out calculated pixel
-		imgDst[base_out] = r_b[12];
+		imgDst[base_out + 0] = r_b[12];
 		imgDst[base_out + 1] = g_b[12];
 		imgDst[base_out + 2] = b_b[12];
 
-		base = (Y * imgWidthF - FILTER_W) * 4;	//Setting up base addresses
+		base = ((Y + 1) * imgWidthF - FILTER_W - 1) * 4;	//Setting up base addresses
 		base_out -= 4;
+		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 		//Updating B positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -432,6 +448,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 			r_new[i] = imgSrc[base + i * imgWidthF * 4];
+			//printf("%d\r\n", base + i * imgWidthF * 4);
 			g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 			b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 		}
@@ -442,17 +459,18 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
 		//Writing out calculated pixel
-		imgDst[base_out] = r_a[12];
+		imgDst[base_out + 0] = r_a[12];
 		imgDst[base_out + 1] = g_a[12];
 		imgDst[base_out + 2] = b_a[12];
 
 
 		//Horizontal part, backward
-		for (X = imgWidth - 2; X > 0; X -= 2){
-			printf("\r\nX - Y: %d - %d\r\n", X, Y);
+		for (X = imgWidth - 3; X > 0; X -= 2){
+			//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 			//Updating base addresses
 			base -= 4;
 			base_out -= 4;
+			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -468,10 +486,16 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 				r_new[i] = imgSrc[base + i * imgWidthF * 4];
+				//printf("%d\r\n", base + i * imgWidthF * 4);
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
-
+			/*
+			for (i = 0; i < 5; i++) {
+			printf("%d, ", r_new[i]); printf("%d, ", g_new[i]); printf("%d, ", b_new[i]);
+			printf("\r\n");
+			}
+			*/
 			//Sorting and merging the 2 tables
 			//First from A+C->B then B+C->A
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
@@ -479,13 +503,14 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
 
 			//Writing out calculated pixel
-			imgDst[base_out] = r_b[12];
+			imgDst[base_out + 0] = r_b[12];
 			imgDst[base_out + 1] = g_b[12];
 			imgDst[base_out + 2] = b_b[12];
 
 			//Updating base addresses
 			base -= 4;
 			base_out -= 4;
+			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating B positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -511,13 +536,12 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
 			//Writing out calculated pixel
-			imgDst[base_out] = r_a[12];
+			imgDst[base_out + 0] = r_a[12];
 			imgDst[base_out + 1] = g_a[12];
 			imgDst[base_out + 2] = b_a[12];
 		}
 		Y++;
-		printf("%d\r\n", Y);
+		//printf("%d\r\n", Y);
 	}
 	return;
 }
-
