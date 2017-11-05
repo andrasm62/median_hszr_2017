@@ -14,7 +14,6 @@
 #include "defs.h"
 #include "func.h"
 
-
 void main()
 {
 	ilInit();
@@ -30,7 +29,7 @@ void main()
 	int imgHeight	= ilGetInteger(IL_IMAGE_HEIGHT);
 	ILint imgOrigin	= ilGetInteger(IL_ORIGIN_MODE);
 
-	printf("Input resolution: %4dx%4d\n", imgWidth, imgHeight);
+	printf("Input resolution: %4dx%4d\n\n", imgWidth, imgHeight);
 
 	unsigned char *img;
 	int imgWidthF = imgWidth + FILTER_W - 1;
@@ -58,10 +57,8 @@ void main()
 			img[base + 1] = imgData[(row * imgWidth + col) * 3 + 1];
 			img[base + 2] = imgData[(row * imgWidth + col) * 3 + 2];
 			img[base + 3] = 0;
-			//printf("%d, %d, %d, %d\r\n", img[base + 0], img[base + 1], img[base + 2], img[base + 3]);
 		}
 	}
-
 
 // IMAGE PROCESSING
 //---------------------------------------------------------------------------------------
@@ -76,28 +73,23 @@ void main()
 	s0 = clock();
 	for (int r = 0; r < RUNS; r++)
 	{
-		printf("%d\r\n", r);
-		
+		printf("Start run: %d\r\n", r);
 		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, img, imgRes);
-
-		printf("%d\r\n", r);
-
+		printf("End run: %d\r\n", r);
 	}
 
 	e0 = clock();
 	d0 = (double)(e0-s0)/(RUNS*CLOCKS_PER_SEC);
 	mpixel = (imgWidth*imgHeight/d0)/1000000;
-	printf("C CPU TIME: %4.4f\n", d0);
+	printf("\nC CPU TIME: %4.4f\n", d0);
 	printf("C Mpixel/s: %4.4f\n", mpixel);
 	getchar();
-
 
 	unsigned char *imgWrite;
 	imgWrite = imgRes;
 
 //---------------------------------------------------------------------------------------
 // IMAGE PROCESSING END
-
 
 	for (row=0; row<imgHeight; row++)
 	{
@@ -111,7 +103,6 @@ void main()
 		}
 	}
 
-
 	_aligned_free(img);
 	_aligned_free(imgRes);
 
@@ -119,6 +110,4 @@ void main()
 	ilEnable(IL_FILE_OVERWRITE);
 	ilSaveImage((const char*)("output.jpg"));
 	ilDeleteImages(1, &ilImg);
-
-
 }

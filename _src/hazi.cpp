@@ -5,6 +5,7 @@
 #include "defs.h" 
 #include "limits.h"
 
+/*
 int partition (unsigned char* nums, signed char* pos, int left, int right){
 	unsigned char tmp;
 	signed char tmp_pos;
@@ -23,7 +24,6 @@ int partition (unsigned char* nums, signed char* pos, int left, int right){
 	return i;
 }
 
-
 void quicksort(unsigned char *nums, signed char* pos, int left, int right){
 	int p;	//p is position of pivot in the partitioned array
 	//printf("%d-%d\n", left, right);
@@ -34,7 +34,9 @@ void quicksort(unsigned char *nums, signed char* pos, int left, int right){
 	}
 	return;
 }
+*/
 
+/*
 void bubblesort(unsigned char *nums, signed char* pos, int n){
 	unsigned char tmp;
 	signed char tmp_pos;
@@ -49,52 +51,27 @@ void bubblesort(unsigned char *nums, signed char* pos, int n){
 		}
 	}
 }
+*/
 
 void insertionsort(unsigned char *nums, signed char* pos, int n){
 	__m128i unsorted;
-	for(int i=0; i<n; i++)
+	for (int i = 0; i < n; i++)
 		unsorted.m128i_u16[i] = nums[i];
-	for(int i=n; i<8; i++)
+	for (int i = n; i < 8; i++)
 		unsorted.m128i_u16[i] = _UI16_MAX;
-	
-	signed char posStored[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-	for(int i=0; i<n; i++)
+
+	signed char posStored[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	for (int i = 0; i < n; i++)
 		posStored[i] = pos[i];
 
-	for(int i=0; i<n; i++){
+	for (int i = 0; i < n; i++){
 		__m128i minimum = _mm_minpos_epu16(unsorted);
 		nums[i] = (char)minimum.m128i_u16[0];
 		unsorted.m128i_u16[minimum.m128i_u16[1]] = _UI16_MAX;
 		pos[i] = posStored[minimum.m128i_u16[1]];
 	}
-	
-	//printf_s("\nSorting result:\t%d\t%d\t%d\t%d\n\t\t%d\t%d\t%d\t%d\n",
-	//		nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6], nums[7]);
-	
 	return;
 }
-
-/*
-int quickselect(char *nums, char* pos, int left, int right, int k){
-	int p = partition(nums, new_p, left, right);	//p is position of pivot in the partitioned array
-	int r;
-	
-	//k equals pivot got lucky
-	if (p == k-1){
-		r = nums[p];
-	}
-	//k less than pivot
-	else if (k - 1 < p){
-		r = quickselect(nums, new_p, left, p - 1, k);
-	}
-	//k greater than pivot
-	else{
-		r = quickselect(nums, new_p, p + 1, right, k);
-	}
-	pos = new_p;
-	return r;
-}
-*/
 
 //Merges A+C into B
 void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signed char* a_pos, signed char* b_pos, signed char* c_pos){
@@ -102,85 +79,25 @@ void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signe
 	//quicksort(c, c_pos, 0, FILTER_W - 1);
 	//bubblesort(c, c_pos, FILTER_W);
 	insertionsort(c, c_pos, FILTER_W);
-	/*
-	for (i = 0; i < 25; i++) printf("%d, ", a[i]);
-	printf("\r\n");
-	for (i = 0; i < 25; i++) printf("%d, ", a_pos[i]);
-	printf("\r\n");
-	for (i = 0; i < 5; i++) printf("%d, ", c[i]);
-	printf("\r\n");
-	for (i = 0; i < 5; i++) printf("%d, ", c_pos[i]);
-	printf("\r\n");
-	*/
 	i = 0;
 	j = 0;
 	k = 0;
 	do{
 		while (a_pos[i + k] < 1 && k<6){
-			//printf("a_pos[i(%d) + k(%d)]: %d \r\n", i, k, a_pos[i + k]);
 			k++;
 		}
-		//printf("a[i(%d)+k(%d)]: %d, c[j(%d)]: %d \r\n", i, k, a[i + k], j, c[j]);
 		if (((a[i + k] < c[j]) || (j == FILTER_W)) && (k<6)) {
 			b[i + j] = a[i + k];
 			b_pos[i + j] = a_pos[i + k];
-			//printf("b[i(%d)+j(%d)]: %d, a[i(%d)+k(%d)]: %d \r\n", i, j, b[i + j], i, k, a[i + k]);
-			//printf("b_pos[i(%d)+j(%d)]: %d, a_pos[i(%d)+k(%d)]: %d \r\n", i, j, b_pos[i + j], i, k, a_pos[i + k]);
 			i++;
 		}
 		else {
 			b[i + j] = c[j];
 			b_pos[i + j] = c_pos[j];
-			//printf("b[i(%d)+j(%d)]: %d, c[j(%d)]: %d \r\n", i, j, b[i + j], j, c[j]);
-			//printf("b_pos[i(%d)+j(%d)]: %d, c_pos[j(%d)]: %d \r\n", i, j, b_pos[i + j], j, c_pos[j]);
 			j++;
 		}
 	} while ((i + j) < FILTER_W * (FILTER_H - 0));
-
-	/*
-	for(i = 0,j = 0, k = 0; i + j < FILTER_W * (FILTER_H); i++){
-		while ((a_pos[i+k] < 1) && (k<6)) { k++;}
-		if (a[i + k] <= c[j]) {
-			b[i] = a[i+k];
-			b_pos[i] = a_pos[i+k];
-			printf("i+k: %d\r\n", i + k);
-		}
-		else {
-			b[i] = c[j];
-			b_pos[i] = c_pos[j];
-			j++;
-			i--;
-			printf("j:%d\r\n", j);
-		}
-	}
-	*/
-	/*
-	for (i = 0; i < 25; i++) printf("%d, ", b[i]);
-		printf("\r\n");
-	for (i = 0; i < 25; i++) printf("%d, ", b_pos[i]);
-		printf("\r\n");
-	for (i = 0, j = 0; i < 25; i++)
-		j += b_pos[i];
-	if (j != 325){
-		printf("_________________________");
-		for (j = 0; j < 5; j++){
-			printf("%d, ", c[j]);
-			printf("%d, ", c_pos[j]);
-		}
-		printf("\r\n");
-		j = 0;
-	}
-	*/
-	/*
-	for (i = 1; i < 25; i++)
-	if (b[i] < b[i - 1]){
-		printf("ERROR");
-		while (1);
-	}
-	*/
-
 }
-
 
 void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, int imgFOffsetH, unsigned  char* imgSrc, unsigned char* imgDst){
 
@@ -209,17 +126,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	unsigned int base, base_out;
 
 	signed char lut_fw[26] = { 0, 0, 21, 22, 23, 24, 0, 16, 17, 18, 19, 0, 11, 12, 13, 14, 0, 6, 7, 8, 9, 0, 1, 2, 3, 4 };
-	/*
-	for (i = 0; i < imgHeight; i++){
-		for (j = 0; j < imgWidth; j++){
-			int base = ((i + imgFOffsetH) * imgWidthF + j + imgFOffsetW) * 4;
-			imgDst[(i * imgWidth + j) * 4] = imgSrc[base + 0];
-			imgDst[(i * imgWidth + j) * 4 + 1] = imgSrc[base + 1];
-			imgDst[(i * imgWidth + j) * 4 + 2] = imgSrc[base + 2];
-		}
-	}
-	return;
-	*/
+	
 	//[-2;0] pixel, Output stored in B
 
 	for (i = 0; i < FILTER_W; i++){
@@ -276,14 +183,12 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 
 #pragma omp parallel for num_threads(8) private(X, Y, i, r_a, r_b, g_a, g_b, b_a, b_b, r_a_p, r_b_p, g_a_p, g_b_p, b_a_p, b_b_p, r_new, g_new, b_new, r_new_p, g_new_p, b_new_p, base, base_out)
 	for(int YY=0; YY<imgHeight; YY=YY+2){
-		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
+
 		//Vertical movement, left side
 		
 		Y=YY;
-
 		base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
 		base_out = Y * imgWidth * 4;
-		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 		//Updating A positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -317,7 +222,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 
 		base = (Y * imgWidthF + FILTER_W) * 4;	//Setting up base addresses
 		base_out += 4;
-		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 		//Updating B positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
 			r_b_p[i] = r_b_p[i] - 5;
@@ -350,11 +254,9 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		//Horizontal part, forward
 		for (X = 2; X < imgWidth; X += 2){
 
-			//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 			//Updating base addresses
 			base += 4;
 			base_out += 4;
-			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
 				r_a_p[i] = r_a_p[i] - 5;
@@ -372,12 +274,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
-			/*
-			for (i = 0; i < 5; i++) {
-				printf("%d, ", r_new[i]); printf("%d, ", g_new[i]); printf("%d, ", b_new[i]);
-				printf("\r\n");
-			}
-			*/
+
 			//Sorting new values and merging the 2 tables
 			//First from A+C->B then B+C->A
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
@@ -392,7 +289,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			//Updating base addresses
 			base += 4;
 			base_out += 4;
-			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating B positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -408,7 +304,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 				r_new[i] = imgSrc[base + i * imgWidthF * 4];
-				//printf("%d\r\n", base + i * imgWidthF * 4);
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
@@ -427,10 +322,8 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		
 		//Vertical movement, right side
 
-		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 		base = (imgWidthF * (Y + FILTER_H) - FILTER_W) * 4;	//Setting up base addresses
 		base_out = ((Y + 1) * imgWidth - 1) * 4;
-		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 		//Updating A positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -447,7 +340,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		//Reading new values from the original image
 		for (i = 0; i < FILTER_W; i++){
 			r_new[i] = imgSrc[base + i * 4];
-			//printf("%d\r\n", base + i * 4);
 			g_new[i] = imgSrc[base + i * 4 + 1];
 			b_new[i] = imgSrc[base + i * 4 + 2];
 		}
@@ -465,7 +357,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 
 		base = ((Y + 1) * imgWidthF - FILTER_W - 1) * 4;	//Setting up base addresses
 		base_out -= 4;
-		//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 		//Updating B positions
 		for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -481,7 +372,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 			r_new[i] = imgSrc[base + i * imgWidthF * 4];
-			//printf("%d\r\n", base + i * imgWidthF * 4);
 			g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 			b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 		}
@@ -496,14 +386,11 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		imgDst[base_out + 1] = g_a[12];
 		imgDst[base_out + 2] = b_a[12];
 
-
 		//Horizontal part, backward
 		for (X = imgWidth - 3; X > 0; X -= 2){
-			//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 			//Updating base addresses
 			base -= 4;
 			base_out -= 4;
-			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
@@ -519,16 +406,10 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
 				r_new[i] = imgSrc[base + i * imgWidthF * 4];
-				//printf("%d\r\n", base + i * imgWidthF * 4);
 				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
 				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
 			}
-			/*
-			for (i = 0; i < 5; i++) {
-			printf("%d, ", r_new[i]); printf("%d, ", g_new[i]); printf("%d, ", b_new[i]);
-			printf("\r\n");
-			}
-			*/
+
 			//Sorting and merging the 2 tables
 			//First from A+C->B then B+C->A
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
@@ -543,7 +424,6 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			//Updating base addresses
 			base -= 4;
 			base_out -= 4;
-			//printf("B: %d\r\nBO: %d\r\n", base, base_out);
 
 			//Updating B positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
