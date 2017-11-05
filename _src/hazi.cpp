@@ -3,8 +3,9 @@
 #include "emmintrin.h"
 #include "nmmintrin.h"
 #include "defs.h" 
+#include "limits.h"
 
-int partition(unsigned char* nums, signed char* pos, int left, int right){
+int partition (unsigned char* nums, signed char* pos, int left, int right){
 	unsigned char tmp;
 	signed char tmp_pos;
 	unsigned char pivot = nums[right];
@@ -25,7 +26,7 @@ int partition(unsigned char* nums, signed char* pos, int left, int right){
 
 void quicksort(unsigned char *nums, signed char* pos, int left, int right){
 	int p;	//p is position of pivot in the partitioned array
-	
+	//printf("%d-%d\n", left, right);
 	if (left < right){
 		p = partition(nums, pos, left, right);
 		quicksort(nums, pos, left, p - 1);
@@ -47,6 +48,30 @@ void bubblesort(unsigned char *nums, signed char* pos, int n){
 			}
 		}
 	}
+}
+
+void insertionsort(unsigned char *nums, signed char* pos, int n){
+	__m128i unsorted;
+	for(int i=0; i<n; i++)
+		unsorted.m128i_u16[i] = nums[i];
+	for(int i=n; i<8; i++)
+		unsorted.m128i_u16[i] = _UI16_MAX;
+	
+	signed char posStored[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	for(int i=0; i<n; i++)
+		posStored[i] = pos[i];
+
+	for(int i=0; i<n; i++){
+		__m128i minimum = _mm_minpos_epu16(unsorted);
+		nums[i] = (char)minimum.m128i_u16[0];
+		unsorted.m128i_u16[minimum.m128i_u16[1]] = _UI16_MAX;
+		pos[i] = posStored[minimum.m128i_u16[1]];
+	}
+	
+	//printf_s("\nSorting result:\t%d\t%d\t%d\t%d\n\t\t%d\t%d\t%d\t%d\n",
+	//		nums[0], nums[1], nums[2], nums[3], nums[4], nums[5], nums[6], nums[7]);
+	
+	return;
 }
 
 /*
@@ -75,7 +100,8 @@ int quickselect(char *nums, char* pos, int left, int right, int k){
 void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signed char* a_pos, signed char* b_pos, signed char* c_pos){
 	int i, j, k;
 	//quicksort(c, c_pos, 0, FILTER_W - 1);
-	bubblesort(c, c_pos, FILTER_W);
+	//bubblesort(c, c_pos, FILTER_W);
+	insertionsort(c, c_pos, FILTER_W);
 	/*
 	for (i = 0; i < 25; i++) printf("%d, ", a[i]);
 	printf("\r\n");
@@ -201,12 +227,15 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 		g_new[i] = imgSrc[(i + imgWidthF * imgFOffsetH) * 4 + 1];
 		b_new[i] = imgSrc[(i + imgWidthF * imgFOffsetH) * 4 + 2];
 	}
-	quicksort(r_new, r_new_p, 0, FILTER_W - 1);
-	quicksort(g_new, g_new_p, 0, FILTER_W - 1);
-	quicksort(b_new, b_new_p, 0, FILTER_W - 1);
+	//quicksort(r_new, r_new_p, 0, FILTER_W - 1);
+	//quicksort(g_new, g_new_p, 0, FILTER_W - 1);
+	//quicksort(b_new, b_new_p, 0, FILTER_W - 1);
 	//bubblesort(r_new, r_new_p, FILTER_W);
 	//bubblesort(g_new, g_new_p, FILTER_W);
 	//bubblesort(b_new, b_new_p, FILTER_W);
+	insertionsort(r_new, r_new_p, FILTER_W);
+	insertionsort(g_new, g_new_p, FILTER_W);
+	insertionsort(b_new, b_new_p, FILTER_W);
 
 	for (i = (FILTER_H - 1) * FILTER_W, j = 0; i < FILTER_H * FILTER_W; i++, j++){
 		r_b[i] = r_new[j];
@@ -245,9 +274,12 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	//Image processing
 	//---------------
 
-	while (Y < imgHeight){
+#pragma omp parallel for num_threads(8) private(X, Y, i, r_a, r_b, g_a, g_b, b_a, b_b, r_a_p, r_b_p, g_a_p, g_b_p, b_a_p, b_b_p, r_new, g_new, b_new, r_new_p, g_new_p, b_new_p, base, base_out)
+	for(int YY=0; YY<imgHeight; YY=YY+2){
 		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
 		//Vertical movement, left side
+		
+		Y=YY;
 
 		base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
 		base_out = Y * imgWidth * 4;
@@ -391,7 +423,8 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 1] = g_a[12];
 			imgDst[base_out + 2] = b_a[12];
 		}
-		Y++;
+		Y = YY + 1;
+		
 		//Vertical movement, right side
 
 		//printf("\r\nX - Y: %d - %d\r\n", X, Y);
@@ -540,8 +573,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 1] = g_a[12];
 			imgDst[base_out + 2] = b_a[12];
 		}
-		Y++;
-		//printf("%d\r\n", Y);
 	}
+#pragma omp barrier
 	return;
 }
