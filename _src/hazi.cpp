@@ -181,102 +181,39 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 	//Image processing
 	//---------------
 
+	int partSize = imgHeight / 8;
+	
 #pragma omp parallel for num_threads(8) private(X, Y, i, r_a, r_b, g_a, g_b, b_a, b_b, r_a_p, r_b_p, g_a_p, g_b_p, b_a_p, b_b_p, r_new, g_new, b_new, r_new_p, g_new_p, b_new_p, base, base_out)
-	for(int YY=0; YY<imgHeight; YY=YY+2){
+	for(int part=0; part<8; part++){
+		for(int YY=part*partSize; YY<((part+1)*partSize-1); YY=YY+2){
 
-		//Vertical movement, left side
-		
-		Y=YY;
-		base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
-		base_out = Y * imgWidth * 4;
+			//Vertical movement, left side
+			
+			Y=YY;
+			base = (imgWidthF * (Y + FILTER_H - 1)) * 4;	//Setting up base addresses
+			base_out = Y * imgWidth * 4;
 
-		//Updating A positions
-		for (i = 0; i < FILTER_H * FILTER_W; i++){
-			r_a_p[i] = lut_fw[r_a_p[i]];
-			g_a_p[i] = lut_fw[g_a_p[i]];
-			b_a_p[i] = lut_fw[b_a_p[i]];
-		}
-		for (i = 0; i < FILTER_W; i++){
-			r_new_p[i] = (i + 1) * 5;
-			g_new_p[i] = (i + 1) * 5;
-			b_new_p[i] = (i + 1) * 5;
-		}
-
-		//Reading new values from the original image
-		for (i = 0; i < FILTER_W; i++){
-			r_new[i] = imgSrc[base + i];
-			g_new[i] = imgSrc[base + i + 1];
-			b_new[i] = imgSrc[base + i + 2];
-		}
-
-		//Sorting new values and merging the 2 tables
-		//Output in B
-		sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
-		sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
-		sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
-
-		//Writing out calculated pixel
-		imgDst[base_out + 0] = r_b[12];
-		imgDst[base_out + 1] = g_b[12];
-		imgDst[base_out + 2] = b_b[12];
-
-		base = (Y * imgWidthF + FILTER_W) * 4;	//Setting up base addresses
-		base_out += 4;
-		//Updating B positions
-		for (i = 0; i < FILTER_H * FILTER_W; i++){
-			r_b_p[i] = r_b_p[i] - 5;
-			g_b_p[i] = g_b_p[i] - 5;
-			b_b_p[i] = b_b_p[i] - 5;
-		}
-
-		//Reading new values from the original image and getting new positions
-		for (i = 0; i < FILTER_H; i++){
-			r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-			g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-			b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-
-			r_new[i] = imgSrc[base + i * imgWidthF * 4];
-			g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
-			b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
-		}
-
-		//Sorting new values and merging the 2 tables
-		//Output in A
-		sort_and_merge(r_b, r_a, r_new, r_b_p, r_a_p, r_new_p);
-		sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
-		sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
-
-		//Writing out calculated pixel
-		imgDst[base_out + 0] = r_a[12];
-		imgDst[base_out + 1] = g_a[12];
-		imgDst[base_out + 2] = b_a[12];
-
-		//Horizontal part, forward
-		for (X = 2; X < imgWidth; X += 2){
-
-			//Updating base addresses
-			base += 4;
-			base_out += 4;
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
-				r_a_p[i] = r_a_p[i] - 5;
-				g_a_p[i] = g_a_p[i] - 5;
-				b_a_p[i] = b_a_p[i] - 5;
+				r_a_p[i] = lut_fw[r_a_p[i]];
+				g_a_p[i] = lut_fw[g_a_p[i]];
+				b_a_p[i] = lut_fw[b_a_p[i]];
+			}
+			for (i = 0; i < FILTER_W; i++){
+				r_new_p[i] = (i + 1) * 5;
+				g_new_p[i] = (i + 1) * 5;
+				b_new_p[i] = (i + 1) * 5;
 			}
 
-			//Reading new values from the original image and getting new positions
-			for (i = 0; i < FILTER_H; i++){
-				r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-				g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-
-				r_new[i] = imgSrc[base + i * imgWidthF * 4];
-				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
-				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+			//Reading new values from the original image
+			for (i = 0; i < FILTER_W; i++){
+				r_new[i] = imgSrc[base + i];
+				g_new[i] = imgSrc[base + i + 1];
+				b_new[i] = imgSrc[base + i + 2];
 			}
 
 			//Sorting new values and merging the 2 tables
-			//First from A+C->B then B+C->A
+			//Output in B
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
 			sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
 			sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
@@ -286,10 +223,8 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 1] = g_b[12];
 			imgDst[base_out + 2] = b_b[12];
 
-			//Updating base addresses
-			base += 4;
+			base = (Y * imgWidthF + FILTER_W) * 4;	//Setting up base addresses
 			base_out += 4;
-
 			//Updating B positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
 				r_b_p[i] = r_b_p[i] - 5;
@@ -309,6 +244,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			}
 
 			//Sorting new values and merging the 2 tables
+			//Output in A
 			sort_and_merge(r_b, r_a, r_new, r_b_p, r_a_p, r_new_p);
 			sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
 			sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
@@ -317,101 +253,102 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 0] = r_a[12];
 			imgDst[base_out + 1] = g_a[12];
 			imgDst[base_out + 2] = b_a[12];
-		}
-		Y = YY + 1;
-		
-		//Vertical movement, right side
 
-		base = (imgWidthF * (Y + FILTER_H) - FILTER_W) * 4;	//Setting up base addresses
-		base_out = ((Y + 1) * imgWidth - 1) * 4;
+			//Horizontal part, forward
+			for (X = 2; X < imgWidth; X += 2){
 
-		//Updating A positions
-		for (i = 0; i < FILTER_H * FILTER_W; i++){
-			r_a_p[i] = lut_fw[r_a_p[i]];
-			g_a_p[i] = lut_fw[g_a_p[i]];
-			b_a_p[i] = lut_fw[b_a_p[i]];
-		}
-		for (i = 0; i < FILTER_W; i++){
-			r_new_p[i] = 25 - i * 5;
-			g_new_p[i] = 25 - i * 5;
-			b_new_p[i] = 25 - i * 5;
-		}
+				//Updating base addresses
+				base += 4;
+				base_out += 4;
+				//Updating A positions
+				for (i = 0; i < FILTER_H * FILTER_W; i++){
+					r_a_p[i] = r_a_p[i] - 5;
+					g_a_p[i] = g_a_p[i] - 5;
+					b_a_p[i] = b_a_p[i] - 5;
+				}
 
-		//Reading new values from the original image
-		for (i = 0; i < FILTER_W; i++){
-			r_new[i] = imgSrc[base + i * 4];
-			g_new[i] = imgSrc[base + i * 4 + 1];
-			b_new[i] = imgSrc[base + i * 4 + 2];
-		}
+				//Reading new values from the original image and getting new positions
+				for (i = 0; i < FILTER_H; i++){
+					r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
-		//Sorting new values and merging the 2 tables
-		//Output in B
-		sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
-		sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
-		sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
+					r_new[i] = imgSrc[base + i * imgWidthF * 4];
+					g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
+					b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+				}
 
-		//Writing out calculated pixel
-		imgDst[base_out + 0] = r_b[12];
-		imgDst[base_out + 1] = g_b[12];
-		imgDst[base_out + 2] = b_b[12];
+				//Sorting new values and merging the 2 tables
+				//First from A+C->B then B+C->A
+				sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
+				sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
+				sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
 
-		base = ((Y + 1) * imgWidthF - FILTER_W - 1) * 4;	//Setting up base addresses
-		base_out -= 4;
+				//Writing out calculated pixel
+				imgDst[base_out + 0] = r_b[12];
+				imgDst[base_out + 1] = g_b[12];
+				imgDst[base_out + 2] = b_b[12];
 
-		//Updating B positions
-		for (i = 0; i < FILTER_H * FILTER_W; i++){
-			r_b_p[i] = r_b_p[i] - 5;
-			g_b_p[i] = g_b_p[i] - 5;
-			b_b_p[i] = b_b_p[i] - 5;
-		}
+				//Updating base addresses
+				base += 4;
+				base_out += 4;
 
-		//Reading new values from the original image and getting new positions
-		for (i = 0; i < FILTER_W; i++){
-			r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-			g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-			b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+				//Updating B positions
+				for (i = 0; i < FILTER_H * FILTER_W; i++){
+					r_b_p[i] = r_b_p[i] - 5;
+					g_b_p[i] = g_b_p[i] - 5;
+					b_b_p[i] = b_b_p[i] - 5;
+				}
 
-			r_new[i] = imgSrc[base + i * imgWidthF * 4];
-			g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
-			b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
-		}
+				//Reading new values from the original image and getting new positions
+				for (i = 0; i < FILTER_H; i++){
+					r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
 
-		//Sorting and merging the 2 tables
-		sort_and_merge(r_b, r_a, r_new, r_b_p, r_a_p, r_new_p);
-		sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
-		sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
+					r_new[i] = imgSrc[base + i * imgWidthF * 4];
+					g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
+					b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+				}
 
-		//Writing out calculated pixel
-		imgDst[base_out + 0] = r_a[12];
-		imgDst[base_out + 1] = g_a[12];
-		imgDst[base_out + 2] = b_a[12];
+				//Sorting new values and merging the 2 tables
+				sort_and_merge(r_b, r_a, r_new, r_b_p, r_a_p, r_new_p);
+				sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
+				sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
 
-		//Horizontal part, backward
-		for (X = imgWidth - 3; X > 0; X -= 2){
-			//Updating base addresses
-			base -= 4;
-			base_out -= 4;
+				//Writing out calculated pixel
+				imgDst[base_out + 0] = r_a[12];
+				imgDst[base_out + 1] = g_a[12];
+				imgDst[base_out + 2] = b_a[12];
+			}
+			Y = YY + 1;
+			
+			//Vertical movement, right side
+
+			base = (imgWidthF * (Y + FILTER_H) - FILTER_W) * 4;	//Setting up base addresses
+			base_out = ((Y + 1) * imgWidth - 1) * 4;
 
 			//Updating A positions
 			for (i = 0; i < FILTER_H * FILTER_W; i++){
-				r_a_p[i] = r_a_p[i] - 5;
-				g_a_p[i] = g_a_p[i] - 5;
-				b_a_p[i] = b_a_p[i] - 5;
+				r_a_p[i] = lut_fw[r_a_p[i]];
+				g_a_p[i] = lut_fw[g_a_p[i]];
+				b_a_p[i] = lut_fw[b_a_p[i]];
 			}
-
-			//Reading new values from the original image and getting new positions
 			for (i = 0; i < FILTER_W; i++){
-				r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-				g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-				b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
-
-				r_new[i] = imgSrc[base + i * imgWidthF * 4];
-				g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
-				b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+				r_new_p[i] = 25 - i * 5;
+				g_new_p[i] = 25 - i * 5;
+				b_new_p[i] = 25 - i * 5;
 			}
 
-			//Sorting and merging the 2 tables
-			//First from A+C->B then B+C->A
+			//Reading new values from the original image
+			for (i = 0; i < FILTER_W; i++){
+				r_new[i] = imgSrc[base + i * 4];
+				g_new[i] = imgSrc[base + i * 4 + 1];
+				b_new[i] = imgSrc[base + i * 4 + 2];
+			}
+
+			//Sorting new values and merging the 2 tables
+			//Output in B
 			sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
 			sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
 			sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
@@ -421,8 +358,7 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 1] = g_b[12];
 			imgDst[base_out + 2] = b_b[12];
 
-			//Updating base addresses
-			base -= 4;
+			base = ((Y + 1) * imgWidthF - FILTER_W - 1) * 4;	//Setting up base addresses
 			base_out -= 4;
 
 			//Updating B positions
@@ -452,6 +388,74 @@ void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW
 			imgDst[base_out + 0] = r_a[12];
 			imgDst[base_out + 1] = g_a[12];
 			imgDst[base_out + 2] = b_a[12];
+
+			//Horizontal part, backward
+			for (X = imgWidth - 3; X > 0; X -= 2){
+				//Updating base addresses
+				base -= 4;
+				base_out -= 4;
+
+				//Updating A positions
+				for (i = 0; i < FILTER_H * FILTER_W; i++){
+					r_a_p[i] = r_a_p[i] - 5;
+					g_a_p[i] = g_a_p[i] - 5;
+					b_a_p[i] = b_a_p[i] - 5;
+				}
+
+				//Reading new values from the original image and getting new positions
+				for (i = 0; i < FILTER_W; i++){
+					r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+
+					r_new[i] = imgSrc[base + i * imgWidthF * 4];
+					g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
+					b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+				}
+
+				//Sorting and merging the 2 tables
+				//First from A+C->B then B+C->A
+				sort_and_merge(r_a, r_b, r_new, r_a_p, r_b_p, r_new_p);
+				sort_and_merge(g_a, g_b, g_new, g_a_p, g_b_p, g_new_p);
+				sort_and_merge(b_a, b_b, b_new, b_a_p, b_b_p, b_new_p);
+
+				//Writing out calculated pixel
+				imgDst[base_out + 0] = r_b[12];
+				imgDst[base_out + 1] = g_b[12];
+				imgDst[base_out + 2] = b_b[12];
+
+				//Updating base addresses
+				base -= 4;
+				base_out -= 4;
+
+				//Updating B positions
+				for (i = 0; i < FILTER_H * FILTER_W; i++){
+					r_b_p[i] = r_b_p[i] - 5;
+					g_b_p[i] = g_b_p[i] - 5;
+					b_b_p[i] = b_b_p[i] - 5;
+				}
+
+				//Reading new values from the original image and getting new positions
+				for (i = 0; i < FILTER_W; i++){
+					r_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					g_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+					b_new_p[i] = FILTER_H * (FILTER_W - 1) + i + 1;
+
+					r_new[i] = imgSrc[base + i * imgWidthF * 4];
+					g_new[i] = imgSrc[base + i * imgWidthF * 4 + 1];
+					b_new[i] = imgSrc[base + i * imgWidthF * 4 + 2];
+				}
+
+				//Sorting and merging the 2 tables
+				sort_and_merge(r_b, r_a, r_new, r_b_p, r_a_p, r_new_p);
+				sort_and_merge(g_b, g_a, g_new, g_b_p, g_a_p, g_new_p);
+				sort_and_merge(b_b, b_a, b_new, b_b_p, b_a_p, b_new_p);
+
+				//Writing out calculated pixel
+				imgDst[base_out + 0] = r_a[12];
+				imgDst[base_out + 1] = g_a[12];
+				imgDst[base_out + 2] = b_a[12];
+			}
 		}
 	}
 #pragma omp barrier
