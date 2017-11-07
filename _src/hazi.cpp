@@ -6,17 +6,17 @@
 #include "limits.h"
 
 /*
-int partition (unsigned char* nums, signed char* pos, int left, int right){
-	unsigned char tmp;
+int partition(float* nums, signed char* pos, int left, int right){
+	float tmp;
 	signed char tmp_pos;
-	unsigned char pivot = nums[right];
-	int i, j;
+	float pivot = nums[right];
+	int i, x;
+	
+	#define SWAP(a, b) { tmp = nums[a]; nums[a] = nums[b]; nums[b] = tmp; tmp_pos = pos[a]; pos[a] = pos[b]; pos[b] = tmp_pos; }
 
-#define SWAP(a, b) { tmp = nums[a]; nums[a] = nums[b]; nums[b] = tmp; tmp_pos = pos[a]; pos[a]= pos[b]; pos[b] = tmp_pos; }
-
-	for (j = left, i = left; j < right; j++){
-		if (nums[j] <= pivot){
-			SWAP(i, j);
+	for (x = left, i = left; x < right; x++){
+		if (nums[x] <= pivot){
+			SWAP(i, x);
 			i++;
 		}
 	}
@@ -24,7 +24,7 @@ int partition (unsigned char* nums, signed char* pos, int left, int right){
 	return i;
 }
 
-void quicksort(unsigned char *nums, signed char* pos, int left, int right){
+void quicksort(float *nums, signed char* pos, int left, int right){
 	int p;	//p is position of pivot in the partitioned array
 	//printf("%d-%d\n", left, right);
 	if (left < right){
@@ -37,8 +37,8 @@ void quicksort(unsigned char *nums, signed char* pos, int left, int right){
 */
 
 /*
-void bubblesort(unsigned char *nums, signed char* pos, int n){
-	unsigned char tmp;
+void bubblesort(float *nums, signed char* pos, int n){
+	float tmp;
 	signed char tmp_pos;
 	int i, j;
 #define SWAP(a, b) { tmp = nums[a]; nums[a] = nums[b]; nums[b] = tmp; tmp_pos = pos[a]; pos[a]= pos[b]; pos[b] = tmp_pos; }
@@ -53,7 +53,8 @@ void bubblesort(unsigned char *nums, signed char* pos, int n){
 }
 */
 
-void insertionsort(unsigned char *nums, signed char* pos, int n){
+void insertionsort(float *nums, signed char* pos, int n){
+	//Átgondolni
 	__m128i unsorted;
 	for (int i = 0; i < n; i++)
 		unsorted.m128i_u16[i] = nums[i];
@@ -74,7 +75,7 @@ void insertionsort(unsigned char *nums, signed char* pos, int n){
 }
 
 //Merges A+C into B
-void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signed char* a_pos, signed char* b_pos, signed char* c_pos){
+void sort_and_merge(float* a, float* b, float* c, signed char* a_pos, signed char* b_pos, signed char* c_pos){
 	int i, j, k;
 	//quicksort(c, c_pos, 0, FILTER_W - 1);
 	//bubblesort(c, c_pos, FILTER_W);
@@ -99,27 +100,27 @@ void sort_and_merge(unsigned char* a, unsigned  char* b, unsigned char* c, signe
 	} while ((i + j) < FILTER_W * (FILTER_H - 0));
 }
 
-void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, int imgFOffsetH, unsigned  char* imgSrc, unsigned char* imgDst){
+void median_filter_C(int imgHeight, int imgWidth, int imgWidthF, int imgFOffsetW, int imgFOffsetH, float* imgSrc, float* imgDst){
 
 	int X = 0, Y = 0;
 	int i, j;
 
 	//Tables for filter windows
-	unsigned char r_a[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	unsigned char r_b[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	unsigned char g_a[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	unsigned char g_b[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	unsigned char b_a[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	unsigned char b_b[FILTER_H * FILTER_W] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	float r_a[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+	float r_b[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+	float g_a[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+	float g_b[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+	float b_a[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
+	float b_b[FILTER_H * FILTER_W] = { 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0, 0.0};
 	signed char r_a_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };//{1,6,11,16,21, 2,7,12,17,22, 3,8,13,18,23, 4,9,14,19,24, 5,10,15,20,25};
 	signed char r_b_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };
 	signed char g_a_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };
 	signed char g_b_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };
 	signed char b_a_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };
 	signed char b_b_p[FILTER_H * FILTER_W] = { 5, 5, 5, 5, 5, 26, 21, 16, 11, 6, 27, 22, 17, 12, 7, 28, 23, 18, 13, 8, 29, 24, 19, 14, 9 };
-	unsigned char r_new[FILTER_H];
-	unsigned char g_new[FILTER_H];
-	unsigned char b_new[FILTER_H];
+	float r_new[FILTER_H];
+	float g_new[FILTER_H];
+	float b_new[FILTER_H];
 	signed char r_new_p[FILTER_H] = { 29, 24, 19, 14, 9 }; //{21,22,23,24,25};
 	signed char g_new_p[FILTER_H] = { 29, 24, 19, 14, 9 };
 	signed char b_new_p[FILTER_H] = { 29, 24, 19, 14, 9 };

@@ -29,14 +29,14 @@ void main()
 	int imgHeight	= ilGetInteger(IL_IMAGE_HEIGHT);
 	ILint imgOrigin	= ilGetInteger(IL_ORIGIN_MODE);
 
-	printf("Input resolution: %4dx%4d\n\n", imgWidth, imgHeight);
+	printf("Input resolution: %4dx%4d\r\n", imgWidth, imgHeight);
 
-	unsigned char *img;
+	float *imgFloat;
 	int imgWidthF = imgWidth + FILTER_W - 1;
 	int imgHeightF = imgHeight + FILTER_H - 1;
 	int imgFOffsetW = (FILTER_W-1)/2;
 	int imgFOffsetH = (FILTER_H-1)/2;
-	img = (unsigned char *)(_aligned_malloc(4 * imgWidthF*imgHeightF*sizeof(unsigned char), 32));
+	imgFloat   = (float *)(_aligned_malloc(4*imgWidthF*imgHeightF*sizeof(float), 32));
 	int row, col;
 
 	for (row=0; row<imgHeightF; row++)
@@ -44,19 +44,23 @@ void main()
 		for (col=0; col<imgWidthF;col++)
 		{
 			int pixel = (row*imgWidthF + col)*4;
-			img[pixel] = 0;
-			img[pixel + 1] = 0;
-			img[pixel + 2] = 0;
-			img[pixel + 3] = 0;
+			*(imgFloat+pixel+0) = 0.0f;
+			*(imgFloat + pixel + 1) = 0.0f;
+			*(imgFloat + pixel + 2) = 0.0f;
+			*(imgFloat + pixel + 3) = 0.0f;
 		}
 	}
-	for (row = 0; row < imgHeight; row++){
-		for (col = 0; col < imgWidth; col++){
-			int base = ((row + imgFOffsetH) * imgWidthF + col + imgFOffsetW) * 4;
-			img[base + 0] = imgData[(row * imgWidth + col) * 3];
-			img[base + 1] = imgData[(row * imgWidth + col) * 3 + 1];
-			img[base + 2] = imgData[(row * imgWidth + col) * 3 + 2];
-			img[base + 3] = 0;
+	
+	for (row=0; row<imgHeight; row++)
+	{
+		for (col=0; col<imgWidth;col++)
+		{
+			int pixel_dst = ((row+imgFOffsetH)*imgWidthF + (col+imgFOffsetW))*4;
+			int pixel_src = (row*imgWidth + col)*3;
+			*(imgFloat+pixel_dst+0) = (float)(*(imgData+pixel_src+0));
+			*(imgFloat+pixel_dst+1) = (float)(*(imgData+pixel_src+1));
+			*(imgFloat+pixel_dst+2) = (float)(*(imgData+pixel_src+2));
+			*(imgFloat+pixel_dst+3) = 0.0;
 		}
 	}
 
@@ -65,8 +69,8 @@ void main()
 	clock_t s0, e0;
 	double d0;
 
-	unsigned char *imgRes;
-	imgRes = (unsigned char *)(_aligned_malloc(4 * imgWidthF * imgHeightF * sizeof(unsigned char), 32));
+	float *imgFloatRes;
+	imgFloatRes = (float *)(_aligned_malloc(4*imgWidthF*imgHeightF*sizeof(float), 32));
 
 	double mpixel;
 
@@ -74,7 +78,7 @@ void main()
 	for (int r = 0; r < RUNS; r++)
 	{
 		printf("Start run: %d\r\n", r);
-		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, img, imgRes);
+		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, imgFloat, imgFloatRes);
 		printf("End run: %d\r\n", r);
 	}
 
@@ -85,8 +89,8 @@ void main()
 	printf("C Mpixel/s: %4.4f\n", mpixel);
 	getchar();
 
-	unsigned char *imgWrite;
-	imgWrite = imgRes;
+	float *imgFloatWrite;
+	imgFloatWrite = imgFloatRes;
 
 //---------------------------------------------------------------------------------------
 // IMAGE PROCESSING END
@@ -97,14 +101,15 @@ void main()
 		{
 			int pixel_src = (row*imgWidth + col)*4;
 			int pixel_dst = (row*imgWidth + col)*3;
-			*(imgData+pixel_dst+0) = (ILubyte)(*(imgWrite+pixel_src+0));
-			*(imgData+pixel_dst+1) = (ILubyte)(*(imgWrite+pixel_src+1));
-			*(imgData+pixel_dst+2) = (ILubyte)(*(imgWrite+pixel_src+2));
+			*(imgData+pixel_dst+0) = (ILubyte)(*(imgFloatWrite+pixel_src+0));
+			*(imgData+pixel_dst+1) = (ILubyte)(*(imgFloatWrite+pixel_src+1));
+			*(imgData+pixel_dst+2) = (ILubyte)(*(imgFloatWrite+pixel_src+2));
 		}
 	}
 
-	_aligned_free(img);
-	_aligned_free(imgRes);
+
+	_aligned_free(imgFloat);
+	_aligned_free(imgFloatRes);
 
 	ret = ilSetData(imgData);
 	ilEnable(IL_FILE_OVERWRITE);
