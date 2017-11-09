@@ -104,7 +104,7 @@ void median_filter_SSE(int imgHeight, int imgWidth, int imgWidthF, int imgFOffse
 //Image processing
 //---------------
 
-		while (Y < imgHeight){
+		while (Y < (part + 1) * imgHeight / NUM_OF_THREADS){
 
 			//Vertical movement, left side
 			index = FILTER_H * FILTER_W - 1;
