@@ -78,7 +78,7 @@ void main()
 	for (int r = 0; r < RUNS; r++)
 	{
 		printf("Start run: %d\r\n", r);
-		median_filter_C(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, imgFloat, imgFloatRes);
+		median_filter_SSE(imgHeight, imgWidth, imgWidthF, imgFOffsetW, imgFOffsetH, imgFloat, imgFloatRes);
 		printf("End run: %d\r\n", r);
 	}
 
