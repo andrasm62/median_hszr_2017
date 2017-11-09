@@ -33,17 +33,15 @@ __m128 insert_and_get_median(__m128 new_val, __m128* val, __m128* pos, int* inde
 	
 	//Filtering
 	for (i = 0; i < (FILTER_W * FILTER_H); i++){
-		//printf("Index: %d\r\npos_o:%2.0f ",*index, pos[i].m128_f32[0]);
 		//If (ACT > OLD) OR ((ACT == OLD) AND (POS_ACT > POS_OLD)), we need to decrease the postion with one 
 		pos[i] =_mm_sub_ps(pos[i],_mm_and_ps(_mm_or_ps(_mm_and_ps(_mm_cmpeq_ps(val[i], old_val),_mm_cmpgt_ps(pos[i], pos[*index])),_mm_cmpgt_ps(val[i], old_val)),one));
-		//printf("pos_n: %2.0f val[i]: %2.0f > val[index]: %2.0f i: %d\r\n", pos[i].m128_f32[0], val[i].m128_f32[0], val[*index].m128_f32[0], i);
-		//printf("val[i]: %2.0f >= new_val: %2.0f\r\npos_o[i]: %2.0f ", val[i].m128_f32[0], new_val.m128_f32[0], pos[i].m128_f32[0]);
+		
 		//If ACT >= NEW, we need to increase the position with one
 		pos[i] = _mm_add_ps(pos[i], _mm_and_ps(_mm_cmpge_ps(val[i], new_val), one));
-		//printf("pos[i]:%2.0f \r\ntemp_pos_o: %2.0f ", pos[i].m128_f32[0], temp_pos.m128_f32[0]);
+		
 		//If NEW > ACT, we need to increase the POS_NEW with one
 		temp_pos = _mm_add_ps(temp_pos, _mm_and_ps(_mm_cmpgt_ps(new_val, val[i]), one));
-		//printf("temp_pos:%2.0f new_val: %2.0f > val[i]: %2.0f\r\n", temp_pos.m128_f32[0], new_val.m128_f32[0], pos[i].m128_f32[0]);
+		
 		//If the POS_ACT value equals to the median position, we have found the median value. 
 		median = _mm_add_ps(median, _mm_and_ps(_mm_cmpeq_ps(pos[i], med_of_filter_width), val[i]));
 	}
@@ -52,17 +50,7 @@ __m128 insert_and_get_median(__m128 new_val, __m128* val, __m128* pos, int* inde
 	pos[*index] = temp_pos;
 	//If the new value is the median, then set it as the median
 	median = _mm_add_ps(median, _mm_and_ps(_mm_cmpeq_ps(temp_pos, med_of_filter_width), new_val));
-	/*
-	printf("%2.0f\r\n", new_val.m128_f32[0]);
-	for (i = 0; i < 25; i++){
-		printf("%2.0f ", val[i].m128_f32[0]);
-	}
-	printf("\r\n");
-	for (i = 0; i < 25; i++){
-		printf("%2.0f ", pos[i].m128_f32[0]);
-	}
-	printf("\r\nmedian:%2.0f %2.0f %2.0f %2.0f \r\n", median.m128_f32[0], median.m128_f32[1], median.m128_f32[2], median.m128_f32[3]);
-	*/
+
 	return median;
 }
 
