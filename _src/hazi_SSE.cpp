@@ -73,7 +73,7 @@ void median_filter_SSE(int imgHeight, int imgWidth, int imgWidthF, int imgFOffse
 		pos[i] = _mm_set_ps(i + 0.0, i + 0.0, i + 0.0, i + 0.0);
 	}
 
-#pragma omp parallel for num_threads(NUM_OF_THREADS) private(X, Y, i, j, k, base, base_out, new_val, median, tmp_1, tmp_2, val, pos)
+#pragma omp parallel for num_threads(NUM_OF_THREADS) private(X, Y, i, j, k, base, base_out, new_val, median, tmp_1, tmp_2, val, pos, index)
 	for (int part = 0; part < NUM_OF_THREADS; part++){
 		Y = part * imgHeight / NUM_OF_THREADS;//Each thread works on a different part of the image
 
